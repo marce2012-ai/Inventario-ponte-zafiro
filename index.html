@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Inventario - PONTE ZAFIRO</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Estilos personalizados para la tipografía Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Fondo gris claro */
+        }
+        /* Colores de las secciones */
+        .tab-compra { background-color: #10B981; } /* Verde Esmeralda (emerald-500) */
+        .tab-dispensacion { background-color: #F59E0B; } /* Naranja Ámbar (amber-500) */
+        .tab-terminada { background-color: #DC2626; } /* Rojo Intenso (red-600) */
+        .tab-venta { background-color: #1D4ED8; } /* Azul Zafiro (blue-700) */
+        
+        /* Estilo para la alerta de stock */
+        .alert-low { background-color: #FEE2E2; color: #DC2626; border-color: #DC2626; }
+        .alert-ok { background-color: #D1FAE5; color: #059669; border-color: #059669; }
+        
+        .tab-btn.active {
+            filter: brightness(1.1); /* Hace que la pestaña activa brille un poco más */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+        .stock-item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .form-select-required:invalid {
+            border-color: #DC2626;
+            box-shadow: 0 0 0 1px #DC2626;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-8">
+        Inventario PONTE ZAFIRO <span class="text-blue-700">💍</span>
+    </h1>
+
+    <div id="app-container" class="max-w-7xl mx-auto">
+        <!-- 1. Controles y Pestañas de Formulario -->
+        <div class="bg-white rounded-xl shadow-2xl p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                <i data-lucide="pencil-line" class="mr-2 h-6 w-6 text-indigo-600"></i>
+                Registro de Movimientos
+            </h2>
+            <div id="tab-controls" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <button data-tab="compra" class="tab-btn tab-compra active text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
+                    <i data-lucide="plus-circle" class="h-5 w-5 mr-2"></i> Compras
+                </button>
+                <button data-tab="dispensacion" class="tab-btn tab-dispensacion text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
+                    <i data-lucide="minus-circle" class="h-5 w-5 mr-2"></i> Dispensación
+                </button>
+                <button data-tab="terminada" class="tab-btn tab-terminada text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
+                    <i data-lucide="package-check" class="h-5 w-5 mr-2"></i> Joya Terminada
+                </button>
+                <button data-tab="venta" class="tab-btn tab-venta text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
+                    <i data-lucide="shopping-cart" class="h-5 w-5 mr-2"></i> Venta de Joyas
+                </button>
+            </div>
+
+            <!-- Contenido de las Pestañas (Formularios) -->
+            <div id="tab-content" class="p-4 border-2 border-dashed border-gray-200 rounded-lg">
+                <!-- REGISTRO DE COMPRAS (Verde) -->
+                <form id="form-compra" class="tab-pane" style="display: block;">
+                    <h3 class="text-xl font-bold text-emerald-600 mb-4">Registro de Compras (Insumos)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">No. de Factura (Auto)</label>
+                                <input type="text" id="compra-factura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed p-2" readonly placeholder="Generado automáticamente">
+                            </div>
+                            <div>
+                                <label for="compra-proveedor" class="block text-sm font-medium text-gray-700">Proveedor</label>
+                                <select id="compra-proveedor" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required">
+                                    <option value="">Seleccione un proveedor</option>
+                                    <option value="Santorini">Santorini</option>
+                                    <option value="Inversiones JG">Inversiones JG</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="compra-insumo" class="block text-sm font-medium text-gray-700">Insumo</label>
+                                <select id="compra-insumo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
+                            </div>
+                            <div>
+                                <label for="compra-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Comprada</label>
+                                <input type="number" id="compra-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-xs text-gray-500">Fecha: <span id="compra-date"></span></div>
+                        <button type="submit" class="bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-emerald-700 transition duration-200">
+                            Registrar Compra
+                        </button>
+                    </div>
+                </form>
+
+                <!-- SOLICITUD/DISPENSACIÓN (Naranja) -->
+                <form id="form-dispensacion" class="tab-pane" style="display: none;">
+                    <h3 class="text-xl font-bold text-amber-600 mb-4">Solicitud/Dispensación (Insumos)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="dispensacion-solicitante" class="block text-sm font-medium text-gray-700">Solicitante (Artesano/a)</label>
+                                <input type="text" id="dispensacion-solicitante" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Nombre del Artesano/a">
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="dispensacion-insumo" class="block text-sm font-medium text-gray-700">Insumo</label>
+                                <select id="dispensacion-insumo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
+                            </div>
+                            <div>
+                                <label for="dispensacion-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Entregada (A descontar)</label>
+                                <input type="number" id="dispensacion-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-xs text-gray-500">Fecha: <span id="dispensacion-date"></span></div>
+                        <button type="submit" class="bg-amber-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-amber-700 transition duration-200">
+                            Dispensar Insumo
+                        </button>
+                    </div>
+                </form>
+
+                <!-- REGISTRO DE JOYA TERMINADA (Rojo Intenso) -->
+                <form id="form-terminada" class="tab-pane" style="display: none;">
+                    <h3 class="text-xl font-bold text-red-700 mb-4">Registro de Joya Terminada (Inventario Entrada)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="terminada-joya" class="block text-sm font-medium text-gray-700">Nombre de la Joya</label>
+                            <select id="terminada-joya" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
+                        </div>
+                        <div>
+                            <label for="terminada-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Ingresada</label>
+                            <input type="number" id="terminada-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-xs text-gray-500">Fecha: <span id="terminada-date"></span></div>
+                        <button type="submit" class="bg-red-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-red-800 transition duration-200">
+                            Registrar Joya Terminada
+                        </button>
+                    </div>
+                </form>
+
+                <!-- REGISTRO DE VENTA DE JOYAS (Azul Zafiro) -->
+                <form id="form-venta" class="tab-pane" style="display: none;">
+                    <h3 class="text-xl font-bold text-blue-800 mb-4">Registro de Venta de Joyas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="venta-joya" class="block text-sm font-medium text-gray-700">Joya Vendida</label>
+                            <select id="venta-joya" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
+                        </div>
+                        <div>
+                            <label for="venta-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Vendida (A descontar)</label>
+                            <input type="number" id="venta-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-center">
+                        <div class="text-xs text-gray-500">Fecha: <span id="venta-date"></span></div>
+                        <button type="submit" class="bg-blue-800 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-blue-900 transition duration-200">
+                            Registrar Venta
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. Tablero de Stock y Alertas (En tiempo real) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-2xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <i data-lucide="database" class="mr-2 h-6 w-6 text-blue-700"></i>
+                    Tablero de Stock de Joyas (Base Min: 10)
+                </h2>
+                <div id="joyas-stock-board" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2">
+                    <!-- Contenido de stock de joyas se carga aquí -->
+                    <p class="text-center text-gray-500 md:col-span-2">Cargando stock de joyas...</p>
+                </div>
+            </div>
+             <div class="bg-white rounded-xl shadow-2xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <i data-lucide="blocks" class="mr-2 h-6 w-6 text-emerald-600"></i>
+                    Tablero de Stock de Insumos (Base Min: 10)
+                </h2>
+                <div id="insumos-stock-board" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    <!-- Contenido de stock de insumos se carga aquí -->
+                    <p class="text-center text-gray-500">Cargando stock de insumos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Historiales (Permanentes) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white rounded-xl shadow-2xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <i data-lucide="history" class="mr-2 h-6 w-6 text-blue-800"></i>
+                    Historial de Joyas Vendidas
+                </h2>
+                <div id="historial-ventas" class="overflow-x-auto max-h-96">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joya</th>
+                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ventas-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Historial de ventas se carga aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-2xl p-6">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <i data-lucide="book-open" class="mr-2 h-6 w-6 text-amber-600"></i>
+                    Historial de Insumos Dispensados
+                </h2>
+                <div id="historial-dispensacion" class="overflow-x-auto max-h-96">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Insumo</th>
+                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
+                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dispensacion-body" class="bg-white divide-y divide-gray-200">
+                            <!-- Historial de dispensación se carga aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mensajes (Reemplazo de alert/confirm) -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-xl p-6 shadow-2xl max-w-sm w-full transform transition-all">
+            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800 flex items-center"><i data-lucide="bell" class="mr-2 h-6 w-6 text-indigo-600"></i> Mensaje</h3>
+            <p id="modal-message" class="text-gray-700 mb-6"></p>
+            <button id="modal-close" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200 w-full">Aceptar</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Establecer nivel de log para depuración de Firestore
+        setLogLevel('debug');
+
+        // --- Configuración Global de Firebase y Constantes ---
+
+        // Variables globales obligatorias del entorno Canvas
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId = 'anon-user'; // ID temporal
+        let isAuthReady = false;
+
+        const MIN_STOCK = 10;
+        
+        // Listas de datos adjuntos (Insumos y Joyas)
+        const INSUMOS_LIST = [
+            "topos goldfield filled liso 1", "Topos Rectángulo Tallado 01 x Par Gold Filled", "Topos Circulo Irregular Tallado 03 x Par Gold Filled", "Topos Hexágono Tallado 05 x Par Gold Filled", "Aro Para Tejer Gold Filled 2.5cm / x Par", "Aro Para Tejer Gold Filled 3cm / x Par", "Aro Para Tejer Gold Filled 3.5cm / x Par", "Herraje Gancho Catalan Dorado De Acero / X Par", "Candongas De Acero Doradas / 40mm / X Par", "Candongas De Acero Doradas / 25mm / X Par", "Candongas De Acero Doradas / 20mm / X Par", "Candongas De Acero Doradas / 35mm / X Par", "Gota Para Tejer 3 Centimetros Gold Filled X Par", "Triangulo Para Tejer 2 Centimetros Gold Filled X Par", "TERMINAL EN EXTENSIÓN DE RODIO", "HERRAJE ACERO 20 MM TRIANGULO", "GANCHO PESCADOR ACERO DORADO", "HERRAJE TOPO ACERO CIRCULO 20 MM", "HERRAJE ACERO 35 MM CIRCULAR", "HERRAJE ACERO 30 MM CIRCULAR", "GANCHO CATALAN ACERO DORADO OVALADO", "GANCHO CATALAN ACERO DORADO REDONDO", "HERRAJE TOPO ACERO BARRA 14 MM", "HERRAJE TOPO ACERO GOTA", "HERRAJE TOPO ACERO OVALOS", "HERRAJE TOPO ACERO TRIANGULO", "HERRAJE TOPO ACERO ABANICO", "MIYUKI DELICA 11/0"
+        ];
+
+        const JOYAS_LIST = [
+            "Arete", "Aro roja", "Gota gris", "Triangulo miyuki", "Candonga 2,0", "Gota roja", "Gota multicolor", "Aro azul multicolor", "Aro negro", "Cuadro beige y rojo miyuki", "Semitriangulo negro", "Aro multicolor", "Semitriangulo negro+multicolor", "Candonga miyuki rosa", "Gota verde", "Aro blanco", "Gota azul", "Juego miyuki rosa", "Aro negra", "Aro verde", "Candonga Miyuki gris+dorado+blanco", "Juego miyuki lila", "Candonga pequeña", "Juego miyuki negro", "Manilla miyuki dorada+nude", "Manilla roja balines", "Triangulo negro miyuki", "Semitriangulo", "Triangulo rosa miyuki", "Manilla azul", "maillas mamá", "anillos", "Manilla triangulo"
+        ];
+
+        // --- Rutas de Colección Firestore (Públicas, como requiere un inventario compartido) ---
+        const INSUMO_INV_PATH = `artifacts/${appId}/public/data/insumo_inventory`;
+        const JOYA_INV_PATH = `artifacts/${appId}/public/data/joya_inventory`;
+        const INSUMO_TRANS_PATH = `artifacts/${appId}/public/data/insumo_transactions`;
+        const JOYA_TRANS_PATH = `artifacts/${appId}/public/data/joya_transactions`;
+
+        // --- Funciones de Utilidad ---
+
+        // Función para generar un ID de documento basado en el nombre del ítem
+        const getItemDocId = (name) => {
+            return name.toLowerCase().replace(/[^a-z0-9]/g, ''); // Elimina espacios y caracteres especiales
+        };
+
+        // Genera un ID de factura simple basado en la fecha y un hash corto
+        const generateInvoiceId = () => {
+            const date = new Date();
+            const year = date.getFullYear().toString().slice(-2);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hash = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `FAC-${year}${month}${day}-${hash}`;
+        };
+
+        // Muestra un modal de mensaje (reemplazo de alert/confirm)
+        const showMessage = (title, message) => {
+            document.getElementById('modal-title').innerHTML = `<i data-lucide="bell" class="mr-2 h-6 w-6 text-indigo-600"></i> ${title}`;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('message-modal').classList.remove('hidden');
+            lucide.createIcons(); // Vuelve a renderizar el ícono en el modal
+        };
+
+        // Cierra el modal de mensaje
+        document.getElementById('modal-close').addEventListener('click', () => {
+            document.getElementById('message-modal').classList.add('hidden');
+        });
+
+        // Formatea la fecha para la UI
+        const formatDate = (timestamp) => {
+            if (timestamp && timestamp.toDate) {
+                return timestamp.toDate().toLocaleString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            }
+            return new Date().toLocaleDateString('es-CO');
+        };
+
+        // Función para obtener una URL de imagen de marcador de posición (placeholder)
+        const getPlaceholderImageUrl = (name, category = 'joya') => {
+            const color = category === 'joya' ? '1D4ED8/FFFFFF' : '10B981/FFFFFF';
+            const shortName = name.split(' ')[0].substring(0, 5);
+            return `https://placehold.co/100x100/${color}?text=${encodeURIComponent(shortName)}`;
+        };
+
+        // --- Inicialización de Firebase y Autenticación (Función renombrada a setupFirebase) ---
+
+        const setupFirebase = async () => {
+            try {
+                // Se utiliza initializeApp importada de firebase/app
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // For a more persistent experience, use local persistence
+                await setPersistence(auth, browserLocalPersistence);
+
+                // Sign in logic
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Auth state listener
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log("Firebase Auth Ready. User ID:", userId);
+                        // Una vez autenticado, iniciar la carga de datos en tiempo real
+                        setupRealtimeListeners();
+                    } else {
+                        // User is signed out (e.g., in case of anonymous sign-in failure)
+                        console.error("No se pudo autenticar al usuario. Usando ID anónimo temporal.");
+                        userId = crypto.randomUUID();
+                        isAuthReady = true;
+                        setupRealtimeListeners(); // Intentar cargar datos incluso si es anónimo
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al inicializar Firebase o autenticar:", error);
+                showMessage("Error Crítico", "No se pudo conectar con la base de datos. Verifique la configuración.");
+                isAuthReady = true; // Permite que el resto de la UI se cargue
+            }
+        };
+
+        // --- Lógica de Real-Time Listeners (onSnapshot) ---
+
+        const setupRealtimeListeners = () => {
+            if (!isAuthReady || !db) return;
+
+            // 1. Stock de Insumos
+            onSnapshot(collection(db, INSUMO_INV_PATH), (snapshot) => {
+                const insumos = [];
+                snapshot.forEach(doc => {
+                    insumos.push({ id: doc.id, ...doc.data() });
+                });
+                renderInsumoStock(insumos);
+            }, (error) => console.error("Error al escuchar stock de insumos:", error));
+
+            // 2. Stock de Joyas
+            onSnapshot(collection(db, JOYA_INV_PATH), (snapshot) => {
+                const joyas = [];
+                snapshot.forEach(doc => {
+                    joyas.push({ id: doc.id, ...doc.data() });
+                });
+                renderJoyaStock(joyas);
+            }, (error) => console.error("Error al escuchar stock de joyas:", error));
+
+            // 3. Historial de Ventas de Joyas (Tipo 'venta')
+            onSnapshot(collection(db, JOYA_TRANS_PATH), (snapshot) => {
+                const ventas = [];
+                snapshot.forEach(doc => {
+                    ventas.push({ id: doc.id, ...doc.data() });
+                });
+                // Filtrar solo las ventas y ordenar por fecha descendente
+                const historialVentas = ventas
+                    .filter(t => t.type === 'venta')
+                    .sort((a, b) => (b.date?.toMillis() || 0) - (a.date?.toMillis() || 0));
+                renderHistorialVentas(historialVentas);
+            }, (error) => console.error("Error al escuchar historial de ventas:", error));
+
+            // 4. Historial de Dispensación de Insumos (Tipo 'dispensacion')
+            onSnapshot(collection(db, INSUMO_TRANS_PATH), (snapshot) => {
+                const dispensaciones = [];
+                snapshot.forEach(doc => {
+                    dispensaciones.push({ id: doc.id, ...doc.data() });
+                });
+                // Filtrar solo las dispensaciones y ordenar por fecha descendente
+                const historialDispensacion = dispensaciones
+                    .filter(t => t.type === 'dispensacion')
+                    .sort((a, b) => (b.date?.toMillis() || 0) - (a.date?.toMillis() || 0));
+                renderHistorialDispensacion(historialDispensacion);
+            }, (error) => console.error("Error al escuchar historial de dispensación:", error));
+        };
+
+        // --- Funciones de Renderizado de la UI ---
+
+        const renderInsumoStock = (insumos) => {
+            const container = document.getElementById('insumos-stock-board');
+            if (insumos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 py-4">No hay insumos registrados en stock.</p>';
+                return;
+            }
+
+            container.innerHTML = insumos.map(item => {
+                const alertClass = item.stock < MIN_STOCK ? 'alert-low' : 'alert-ok';
+                const alertText = item.stock < MIN_STOCK ? 'Stock Mínimo' : 'Stock OK';
+                const icon = item.stock < MIN_STOCK ? 'alert-triangle' : 'check-circle';
+                const color = item.stock < MIN_STOCK ? 'text-red-600' : 'text-emerald-600';
+                const imageUrl = getPlaceholderImageUrl(item.name, 'insumo');
+
+                return `
+                    <div class="stock-item-card flex items-center p-3 rounded-lg bg-white shadow-md border border-gray-100 transition duration-200 cursor-default">
+                        <img src="${imageUrl}" onerror="this.onerror=null;this.src='${getPlaceholderImageUrl('insumo', 'insumo')}'" alt="${item.name}" class="w-10 h-10 object-cover rounded mr-4 ring-2 ring-emerald-300">
+                        <div class="flex-grow">
+                            <p class="font-medium text-gray-800">${item.name}</p>
+                            <p class="text-sm text-gray-500">Stock: <span class="${color} font-bold">${item.stock}</span> unidades</p>
+                        </div>
+                        <div class="flex items-center text-xs font-semibold py-1 px-2 rounded-full ${alertClass} border ml-2">
+                            <i data-lucide="${icon}" class="w-3 h-3 mr-1"></i> ${alertText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            // Re-renderizar iconos de lucide
+            lucide.createIcons();
+        };
+
+        const renderJoyaStock = (joyas) => {
+            const container = document.getElementById('joyas-stock-board');
+            if (joyas.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 md:col-span-2 py-4">No hay joyas terminadas registradas.</p>';
+                return;
+            }
+
+            container.innerHTML = joyas.map(item => {
+                const alertClass = item.stock < MIN_STOCK ? 'alert-low' : 'alert-ok';
+                const alertText = item.stock < MIN_STOCK ? 'Stock Mínimo' : 'Stock OK';
+                const icon = item.stock < MIN_STOCK ? 'alert-triangle' : 'check-circle';
+                const color = item.stock < MIN_STOCK ? 'text-red-600' : 'text-emerald-600';
+                const imageUrl = getPlaceholderImageUrl(item.name, 'joya');
+
+                return `
+                    <div class="stock-item-card flex items-center p-3 rounded-lg bg-white shadow-md border border-gray-100 transition duration-200 cursor-default">
+                        <img src="${imageUrl}" onerror="this.onerror=null;this.src='${getPlaceholderImageUrl('joya', 'joya')}'" alt="${item.name}" class="w-10 h-10 object-cover rounded mr-4 ring-2 ring-blue-300">
+                        <div class="flex-grow">
+                            <p class="font-medium text-gray-800">${item.name}</p>
+                            <p class="text-sm text-gray-500">Stock: <span class="${color} font-bold">${item.stock}</span> unidades</p>
+                        </div>
+                        <div class="flex items-center text-xs font-semibold py-1 px-2 rounded-full ${alertClass} border ml-2">
+                            <i data-lucide="${icon}" class="w-3 h-3 mr-1"></i> ${alertText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        };
+
+        const renderHistorialVentas = (ventas) => {
+            const body = document.getElementById('ventas-body');
+            if (ventas.length === 0) {
+                body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No hay ventas registradas aún.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = ventas.map(item => `
+                <tr class="hover:bg-blue-50 transition duration-100">
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">${formatDate(item.date)}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.joya}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-bold text-red-600">-${item.cantidad}</td>
+                </tr>
+            `).join('');
+        };
+
+        const renderHistorialDispensacion = (dispensaciones) => {
+            const body = document.getElementById('dispensacion-body');
+            if (dispensaciones.length === 0) {
+                body.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay dispensaciones registradas aún.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = dispensaciones.map(item => `
+                <tr class="hover:bg-amber-50 transition duration-100">
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">${formatDate(item.date)}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.insumo}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700">${item.solicitante}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-bold text-red-600">-${item.cantidad}</td>
+                </tr>
+            `).join('');
+        };
+
+        // --- Lógica de Formularios y Transacciones ---
+
+        // Utiliza el nombre del ítem como ID de documento de stock
+        const updateStock = async (name, path, amount) => {
+            const docId = getItemDocId(name);
+            const docRef = doc(db, path, docId);
+            await setDoc(docRef, {
+                name: name, // Guardamos el nombre original para mostrar
+                stock: increment(amount),
+                lastUpdated: serverTimestamp(),
+            }, { merge: true });
+        };
+
+        const addTransaction = async (path, data) => {
+            await addDoc(collection(db, path), {
+                ...data,
+                date: serverTimestamp(),
+                userId: userId
+            });
+        };
+
+        // Handler: Registro de Compras (Insumos + Stock Up)
+        const handleCompra = async (e) => {
+            e.preventDefault();
+            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
+
+            const factura = document.getElementById('compra-factura').value;
+            const proveedor = document.getElementById('compra-proveedor').value;
+            const insumo = document.getElementById('compra-insumo').value;
+            const cantidad = parseInt(document.getElementById('compra-cantidad').value);
+
+            if (!proveedor || insumo === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, seleccione un proveedor e insumo y una cantidad válida.");
+
+            try {
+                // 1. Actualizar Stock de Insumo (Incrementar). Usamos el nombre original para la transacción
+                await updateStock(insumo, INSUMO_INV_PATH, cantidad);
+
+                // 2. Registrar Transacción (Log)
+                await addTransaction(INSUMO_TRANS_PATH, {
+                    type: 'compra',
+                    factura: factura,
+                    proveedor: proveedor,
+                    insumo: insumo,
+                    cantidad: cantidad
+                });
+
+                showMessage("Registro Exitoso", `Se registraron ${cantidad} unidades de ${insumo}. Stock actualizado.`);
+                e.target.reset();
+                // Asegurarse de reestablecer los select y regenerar la factura
+                document.getElementById('compra-proveedor').value = "";
+                document.getElementById('compra-insumo').value = "";
+                document.getElementById('compra-factura').value = generateInvoiceId();
+            } catch (error) {
+                console.error("Error al registrar compra:", error);
+                showMessage("Error en BD", "Hubo un error al guardar la compra. Revise la consola.");
+            }
+        };
+
+        // Handler: Solicitud/Dispensación (Insumos + Stock Down)
+        const handleDispensacion = async (e) => {
+            e.preventDefault();
+            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
+
+            const solicitante = document.getElementById('dispensacion-solicitante').value.trim();
+            const insumo = document.getElementById('dispensacion-insumo').value;
+            const cantidad = parseInt(document.getElementById('dispensacion-cantidad').value);
+
+            if (!solicitante || insumo === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, complete todos los campos con valores válidos.");
+
+            try {
+                const docId = getItemDocId(insumo);
+                const docRef = doc(db, INSUMO_INV_PATH, docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists() && docSnap.data().stock >= cantidad) {
+                    // 1. Actualizar Stock de Insumo (Decrementar)
+                    await updateStock(insumo, INSUMO_INV_PATH, -cantidad);
+
+                    // 2. Registrar Transacción (Log - Requerido para Historial)
+                    await addTransaction(INSUMO_TRANS_PATH, {
+                        type: 'dispensacion',
+                        solicitante: solicitante,
+                        insumo: insumo,
+                        cantidad: cantidad
+                    });
+
+                    showMessage("Dispensación Exitosa", `Se entregaron ${cantidad} unidades de ${insumo} a ${solicitante}.`);
+                    e.target.reset();
+                    document.getElementById('dispensacion-insumo').value = "";
+                } else if (docSnap.exists()) {
+                    showMessage("Stock Insuficiente", `Solo hay ${docSnap.data().stock} unidades de ${insumo}. No se pudo dispensar ${cantidad}.`);
+                } else {
+                    showMessage("Stock No Encontrado", `El insumo ${insumo} no está en el inventario.`);
+                }
+            } catch (error) {
+                console.error("Error al dispensar insumo:", error);
+                showMessage("Error en BD", "Hubo un error al guardar la dispensación. Revise la consola.");
+            }
+        };
+
+        // Handler: Registro de Joya Terminada (Joya + Stock Up)
+        const handleJoyaTerminada = async (e) => {
+            e.preventDefault();
+            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
+
+            const joya = document.getElementById('terminada-joya').value;
+            const cantidad = parseInt(document.getElementById('terminada-cantidad').value);
+
+            if (joya === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, seleccione una joya y una cantidad válida.");
+
+            try {
+                // 1. Actualizar Stock de Joya (Incrementar)
+                await updateStock(joya, JOYA_INV_PATH, cantidad);
+
+                // 2. Registrar Transacción (Log)
+                await addTransaction(JOYA_TRANS_PATH, {
+                    type: 'terminada',
+                    joya: joya,
+                    cantidad: cantidad
+                });
+
+                showMessage("Registro Exitoso", `Se registraron ${cantidad} joyas terminadas de tipo ${joya}.`);
+                e.target.reset();
+                document.getElementById('terminada-joya').value = "";
+            } catch (error) {
+                console.error("Error al registrar joya terminada:", error);
+                showMessage("Error en BD", "Hubo un error al guardar la joya terminada. Revise la consola.");
+            }
+        };
+
+        // Handler: Registro de Venta (Joya + Stock Down)
+        const handleVenta = async (e) => {
+            e.preventDefault();
+            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
+
+            const joya = document.getElementById('venta-joya').value;
+            const cantidad = parseInt(document.getElementById('venta-cantidad').value);
+
+            if (joya === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, seleccione una joya y una cantidad válida.");
+
+            try {
+                const docId = getItemDocId(joya);
+                const docRef = doc(db, JOYA_INV_PATH, docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists() && docSnap.data().stock >= cantidad) {
+                    // 1. Actualizar Stock de Joya (Decrementar)
+                    await updateStock(joya, JOYA_INV_PATH, -cantidad);
+
+                    // 2. Registrar Transacción (Log - Requerido para Historial)
+                    await addTransaction(JOYA_TRANS_PATH, {
+                        type: 'venta',
+                        joya: joya,
+                        cantidad: cantidad
+                    });
+
+                    showMessage("Venta Registrada", `Se vendieron ${cantidad} unidades de ${joya}. Historial guardado.`);
+                    e.target.reset();
+                    document.getElementById('venta-joya').value = "";
+                } else if (docSnap.exists()) {
+                    showMessage("Stock Insuficiente", `Solo hay ${docSnap.data().stock} unidades de ${joya} terminadas. No se pudo vender ${cantidad}.`);
+                } else {
+                    showMessage("Stock No Encontrado", `La joya ${joya} no está en el inventario de terminadas.`);
+                }
+            } catch (error) {
+                console.error("Error al registrar venta:", error);
+                showMessage("Error en BD", "Hubo un error al guardar la venta. Revise la consola.");
+            }
+        };
+
+
+        // --- Inicialización de la Aplicación ---
+
+        const startApp = () => { // <--- RENOMBRADA DE initializeApp A startApp
+            // Llenar Dropdowns
+            const populateDropdown = (id, list) => {
+                const select = document.getElementById(id);
+                // Agregar opción por defecto para forzar la selección (HTML required no funciona bien con la primera opción)
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = id.includes('compra-proveedor') ? "Seleccione un proveedor" : "Seleccione...";
+                defaultOption.selected = true;
+                defaultOption.disabled = true;
+                select.appendChild(defaultOption);
+
+                list.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item;
+                    option.textContent = item;
+                    select.appendChild(option);
+                });
+            };
+
+            populateDropdown('compra-insumo', INSUMOS_LIST);
+            populateDropdown('dispensacion-insumo', INSUMOS_LIST);
+            populateDropdown('terminada-joya', JOYAS_LIST);
+            populateDropdown('venta-joya', JOYAS_LIST);
+            // El proveedor ya estaba inicializado en el HTML, pero lo verificamos aquí si fuera necesario
+            
+            // Setup Tab Switching
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+
+                    // Update button styles
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    // Update form visibility
+                    tabPanes.forEach(pane => {
+                        pane.style.display = 'none';
+                        if (pane.id === `form-${targetTab}`) {
+                            pane.style.display = 'block';
+                        }
+                    });
+
+                    // Update dates/invoice IDs on tab switch
+                    updateFormDefaults();
+                });
+            });
+
+            // Set up form submission handlers
+            document.getElementById('form-compra').addEventListener('submit', handleCompra);
+            document.getElementById('form-dispensacion').addEventListener('submit', handleDispensacion);
+            document.getElementById('form-terminada').addEventListener('submit', handleJoyaTerminada);
+            document.getElementById('form-venta').addEventListener('submit', handleVenta);
+
+            // Initial defaults for forms
+            const updateFormDefaults = () => {
+                const currentDate = formatDate();
+                document.getElementById('compra-factura').value = generateInvoiceId();
+                document.getElementById('compra-date').textContent = currentDate;
+                document.getElementById('dispensacion-date').textContent = currentDate;
+                document.getElementById('terminada-date').textContent = currentDate;
+                document.getElementById('venta-date').textContent = currentDate;
+            };
+
+            updateFormDefaults();
+
+            // Render all Lucide icons on load
+            lucide.createIcons();
+
+            // Initialize Firebase (renombrado de initializeFirebase a setupFirebase)
+            setupFirebase();
+        };
+
+        // Ejecutar al cargar la ventana
+        window.onload = startApp; // <--- LLAMANDO A LA FUNCIÓN CON EL NUEVO NOMBRE
+    </script>
+
+</body>
+</html>
