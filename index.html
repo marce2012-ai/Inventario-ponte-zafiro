@@ -3,788 +3,755 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Inventario - PONTE ZAFIRO</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Inventario PONTE ZAFIRO</title>
+    <!-- Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Carga de Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos personalizados para la tipografía Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Fondo gris claro */
+            background-color: #f4f7f9;
         }
-        /* Colores de las secciones */
-        .tab-compra { background-color: #10B981; } /* Verde Esmeralda (emerald-500) */
-        .tab-dispensacion { background-color: #F59E0B; } /* Naranja Ámbar (amber-500) */
-        .tab-terminada { background-color: #DC2626; } /* Rojo Intenso (red-600) */
-        .tab-venta { background-color: #1D4ED8; } /* Azul Zafiro (blue-700) */
-        
-        /* Estilo para la alerta de stock */
-        .alert-low { background-color: #FEE2E2; color: #DC2626; border-color: #DC2626; }
-        .alert-ok { background-color: #D1FAE5; color: #059669; border-color: #059669; }
-        
-        .tab-btn.active {
-            filter: brightness(1.1); /* Hace que la pestaña activa brille un poco más */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 10;
-        }
-        .stock-item-card:hover {
+        .tab-button.active {
+            filter: brightness(110%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .form-select-required:invalid {
-            border-color: #DC2626;
-            box-shadow: 0 0 0 1px #DC2626;
+        .stock-alert-red {
+            animation: pulse-red 1.5s infinite;
         }
+        @keyframes pulse-red {
+            0%, 100% { background-color: #f87171; } /* Red-400 */
+            50% { background-color: #dc2626; }    /* Red-600 */
+        }
+        .stock-card {
+            transition: transform 0.2s;
+        }
+        .stock-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        /* Color Zafiro Intenso (custom) */
+        .bg-sapphire { background-color: #0d47a1; }
+        .hover\:bg-sapphire-dark:hover { background-color: #0b3c8f; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-8">
-        Inventario PONTE ZAFIRO <span class="text-blue-700">💍</span>
-    </h1>
+    <header class="text-center mb-8">
+        <h1 class="text-5xl font-extrabold text-gray-800 tracking-tight">PONTE ZAFIRO</h1>
+        <p class="text-xl text-gray-600 mt-2">Sistema de Gestión de Inventario</p>
+    </header>
 
-    <div id="app-container" class="max-w-7xl mx-auto">
-        <!-- 1. Controles y Pestañas de Formulario -->
-        <div class="bg-white rounded-xl shadow-2xl p-6 mb-8">
-            <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                <i data-lucide="pencil-line" class="mr-2 h-6 w-6 text-indigo-600"></i>
-                Registro de Movimientos
+    <!-- Pestañas de Navegación de Formularios -->
+    <div class="mb-8 border-b border-gray-200">
+        <nav class="flex flex-wrap -mb-px" id="tab-nav">
+            <!-- Pestaña 1: Compras (Verde) -->
+            <button class="tab-button py-3 px-4 md:px-6 text-sm font-medium rounded-t-lg transition duration-300 ease-in-out bg-green-600 text-white active" data-tab="registro-compras">
+                <i class="fas fa-database mr-2"></i> Registro de Compras
+            </button>
+            <!-- Pestaña 2: Dispensación (Naranja) -->
+            <button class="tab-button py-3 px-4 md:px-6 text-sm font-medium rounded-t-lg transition duration-300 ease-in-out bg-orange-600 text-white ml-2" data-tab="solicitud-dispensacion">
+                <i class="fas fa-user-tag mr-2"></i> Solicitud/Dispensación
+            </button>
+            <!-- Pestaña 3: Venta (Zafiro) -->
+            <button class="tab-button py-3 px-4 md:px-6 text-sm font-medium rounded-t-lg transition duration-300 ease-in-out bg-sapphire text-white ml-2" data-tab="registro-venta">
+                <i class="fas fa-shopping-cart mr-2"></i> Registro de Venta
+            </button>
+            <!-- Pestaña 4: Joya Terminada (Rojo) -->
+            <button class="tab-button py-3 px-4 md:px-6 text-sm font-medium rounded-t-lg transition duration-300 ease-in-out bg-red-700 text-white ml-2" data-tab="joya-terminada">
+                <i class="fas fa-gem mr-2"></i> Joya Terminada
+            </button>
+        </nav>
+    </div>
+
+    <!-- Contenido de Formularios -->
+    <div id="form-container" class="bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8">
+        <!-- El contenido del formulario se renderizará aquí -->
+    </div>
+
+    <!-- Dashboards de Stock -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Tablero de Stock de Insumos -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-600">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-box-open mr-2 text-green-600"></i> Tablero de Stock de Insumos
             </h2>
-            <div id="tab-controls" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <button data-tab="compra" class="tab-btn tab-compra active text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
-                    <i data-lucide="plus-circle" class="h-5 w-5 mr-2"></i> Compras
-                </button>
-                <button data-tab="dispensacion" class="tab-btn tab-dispensacion text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
-                    <i data-lucide="minus-circle" class="h-5 w-5 mr-2"></i> Dispensación
-                </button>
-                <button data-tab="terminada" class="tab-btn tab-terminada text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
-                    <i data-lucide="package-check" class="h-5 w-5 mr-2"></i> Joya Terminada
-                </button>
-                <button data-tab="venta" class="tab-btn tab-venta text-white font-bold py-3 px-4 rounded-lg shadow-md hover:opacity-90 transition duration-300 flex items-center justify-center">
-                    <i data-lucide="shopping-cart" class="h-5 w-5 mr-2"></i> Venta de Joyas
-                </button>
-            </div>
-
-            <!-- Contenido de las Pestañas (Formularios) -->
-            <div id="tab-content" class="p-4 border-2 border-dashed border-gray-200 rounded-lg">
-                <!-- REGISTRO DE COMPRAS (Verde) -->
-                <form id="form-compra" class="tab-pane" style="display: block;">
-                    <h3 class="text-xl font-bold text-emerald-600 mb-4">Registro de Compras (Insumos)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">No. de Factura (Auto)</label>
-                                <input type="text" id="compra-factura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm bg-gray-100 cursor-not-allowed p-2" readonly placeholder="Generado automáticamente">
-                            </div>
-                            <div>
-                                <label for="compra-proveedor" class="block text-sm font-medium text-gray-700">Proveedor</label>
-                                <select id="compra-proveedor" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required">
-                                    <option value="">Seleccione un proveedor</option>
-                                    <option value="Santorini">Santorini</option>
-                                    <option value="Inversiones JG">Inversiones JG</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div>
-                                <label for="compra-insumo" class="block text-sm font-medium text-gray-700">Insumo</label>
-                                <select id="compra-insumo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
-                            </div>
-                            <div>
-                                <label for="compra-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Comprada</label>
-                                <input type="number" id="compra-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex justify-between items-center">
-                        <div class="text-xs text-gray-500">Fecha: <span id="compra-date"></span></div>
-                        <button type="submit" class="bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-emerald-700 transition duration-200">
-                            Registrar Compra
-                        </button>
-                    </div>
-                </form>
-
-                <!-- SOLICITUD/DISPENSACIÓN (Naranja) -->
-                <form id="form-dispensacion" class="tab-pane" style="display: none;">
-                    <h3 class="text-xl font-bold text-amber-600 mb-4">Solicitud/Dispensación (Insumos)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-4">
-                            <div>
-                                <label for="dispensacion-solicitante" class="block text-sm font-medium text-gray-700">Solicitante (Artesano/a)</label>
-                                <input type="text" id="dispensacion-solicitante" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2" placeholder="Nombre del Artesano/a">
-                            </div>
-                        </div>
-                        <div class="space-y-4">
-                            <div>
-                                <label for="dispensacion-insumo" class="block text-sm font-medium text-gray-700">Insumo</label>
-                                <select id="dispensacion-insumo" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
-                            </div>
-                            <div>
-                                <label for="dispensacion-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Entregada (A descontar)</label>
-                                <input type="number" id="dispensacion-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex justify-between items-center">
-                        <div class="text-xs text-gray-500">Fecha: <span id="dispensacion-date"></span></div>
-                        <button type="submit" class="bg-amber-600 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-amber-700 transition duration-200">
-                            Dispensar Insumo
-                        </button>
-                    </div>
-                </form>
-
-                <!-- REGISTRO DE JOYA TERMINADA (Rojo Intenso) -->
-                <form id="form-terminada" class="tab-pane" style="display: none;">
-                    <h3 class="text-xl font-bold text-red-700 mb-4">Registro de Joya Terminada (Inventario Entrada)</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="terminada-joya" class="block text-sm font-medium text-gray-700">Nombre de la Joya</label>
-                            <select id="terminada-joya" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
-                        </div>
-                        <div>
-                            <label for="terminada-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Ingresada</label>
-                            <input type="number" id="terminada-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                        </div>
-                    </div>
-                    <div class="mt-4 flex justify-between items-center">
-                        <div class="text-xs text-gray-500">Fecha: <span id="terminada-date"></span></div>
-                        <button type="submit" class="bg-red-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-red-800 transition duration-200">
-                            Registrar Joya Terminada
-                        </button>
-                    </div>
-                </form>
-
-                <!-- REGISTRO DE VENTA DE JOYAS (Azul Zafiro) -->
-                <form id="form-venta" class="tab-pane" style="display: none;">
-                    <h3 class="text-xl font-bold text-blue-800 mb-4">Registro de Venta de Joyas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="venta-joya" class="block text-sm font-medium text-gray-700">Joya Vendida</label>
-                            <select id="venta-joya" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 bg-white form-select-required"></select>
-                        </div>
-                        <div>
-                            <label for="venta-cantidad" class="block text-sm font-medium text-gray-700">Cantidad Vendida (A descontar)</label>
-                            <input type="number" id="venta-cantidad" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2">
-                        </div>
-                    </div>
-                    <div class="mt-4 flex justify-between items-center">
-                        <div class="text-xs text-gray-500">Fecha: <span id="venta-date"></span></div>
-                        <button type="submit" class="bg-blue-800 text-white font-bold py-2 px-6 rounded-lg shadow-lg hover:bg-blue-900 transition duration-200">
-                            Registrar Venta
-                        </button>
-                    </div>
-                </form>
+            <div id="insumo-stock-dashboard" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                <!-- Stock de Insumos se renderizará aquí -->
             </div>
         </div>
 
-        <!-- 2. Tablero de Stock y Alertas (En tiempo real) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-2xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <i data-lucide="database" class="mr-2 h-6 w-6 text-blue-700"></i>
-                    Tablero de Stock de Joyas (Base Min: 10)
-                </h2>
-                <div id="joyas-stock-board" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto pr-2">
-                    <!-- Contenido de stock de joyas se carga aquí -->
-                    <p class="text-center text-gray-500 md:col-span-2">Cargando stock de joyas...</p>
-                </div>
-            </div>
-             <div class="bg-white rounded-xl shadow-2xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <i data-lucide="blocks" class="mr-2 h-6 w-6 text-emerald-600"></i>
-                    Tablero de Stock de Insumos (Base Min: 10)
-                </h2>
-                <div id="insumos-stock-board" class="space-y-4 max-h-96 overflow-y-auto pr-2">
-                    <!-- Contenido de stock de insumos se carga aquí -->
-                    <p class="text-center text-gray-500">Cargando stock de insumos...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. Historiales (Permanentes) -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-white rounded-xl shadow-2xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <i data-lucide="history" class="mr-2 h-6 w-6 text-blue-800"></i>
-                    Historial de Joyas Vendidas
-                </h2>
-                <div id="historial-ventas" class="overflow-x-auto max-h-96">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 sticky top-0">
-                            <tr>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joya</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ventas-body" class="bg-white divide-y divide-gray-200">
-                            <!-- Historial de ventas se carga aquí -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-2xl p-6">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <i data-lucide="book-open" class="mr-2 h-6 w-6 text-amber-600"></i>
-                    Historial de Insumos Dispensados
-                </h2>
-                <div id="historial-dispensacion" class="overflow-x-auto max-h-96">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 sticky top-0">
-                            <tr>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Insumo</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitante</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dispensacion-body" class="bg-white divide-y divide-gray-200">
-                            <!-- Historial de dispensación se carga aquí -->
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Tablero de Stock de Joyas Terminadas -->
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-sapphire">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-ring mr-2 text-sapphire"></i> Tablero de Stock de Joyas Terminadas
+            </h2>
+            <div id="joya-stock-dashboard" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                <!-- Stock de Joyas se renderizará aquí -->
             </div>
         </div>
     </div>
 
-    <!-- Modal para mensajes (Reemplazo de alert/confirm) -->
-    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-white rounded-xl p-6 shadow-2xl max-w-sm w-full transform transition-all">
-            <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800 flex items-center"><i data-lucide="bell" class="mr-2 h-6 w-6 text-indigo-600"></i> Mensaje</h3>
-            <p id="modal-message" class="text-gray-700 mb-6"></p>
-            <button id="modal-close" class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-200 w-full">Aceptar</button>
+    <!-- Historial y Exportación -->
+    <div class="bg-white p-6 md:p-10 rounded-xl shadow-lg mb-8 border-t-4 border-gray-400">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-history mr-2 text-gray-600"></i> Historial y Exportación de Archivos
+        </h2>
+
+        <!-- Filtros de Historial y Exportación -->
+        <div class="flex flex-wrap items-end space-y-4 md:space-y-0 md:space-x-4 mb-6 p-4 bg-gray-50 rounded-lg">
+            <div>
+                <label for="history-type" class="block text-sm font-medium text-gray-700">Seleccionar Historial</label>
+                <select id="history-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                    <option value="purchases">Registro de Compras (Insumos)</option>
+                    <option value="dispensations">Solicitud/Dispensación (Insumos)</option>
+                    <option value="finished_goods">Registro de Joya Terminada</option>
+                    <option value="sales">Registro de Venta de Joyas</option>
+                </select>
+            </div>
+            <div>
+                <label for="start-date" class="block text-sm font-medium text-gray-700">Fecha de Inicio</label>
+                <input type="date" id="start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+            </div>
+            <div>
+                <label for="end-date" class="block text-sm font-medium text-gray-700">Fecha de Fin</label>
+                <input type="date" id="end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+            </div>
+            <button onclick="renderHistory()" class="bg-gray-800 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-150">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+            <button onclick="exportToExcel()" class="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded-lg transition duration-150">
+                <i class="fas fa-file-excel"></i> Exportar a .XLS
+            </button>
+        </div>
+
+        <!-- Tabla de Historial -->
+        <div id="history-table-container" class="overflow-x-auto">
+            <!-- La tabla de historial se renderizará aquí -->
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, setPersistence, browserLocalPersistence, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, addDoc, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Establecer nivel de log para depuración de Firestore
-        setLogLevel('debug');
-
-        // --- Configuración Global de Firebase y Constantes ---
-
-        // Variables globales obligatorias del entorno Canvas
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-        let db;
-        let auth;
-        let userId = 'anon-user'; // ID temporal
-        let isAuthReady = false;
-
-        const MIN_STOCK = 10;
-        
-        // Listas de datos adjuntos (Insumos y Joyas)
-        const INSUMOS_LIST = [
-            "topos goldfield filled liso 1", "Topos Rectángulo Tallado 01 x Par Gold Filled", "Topos Circulo Irregular Tallado 03 x Par Gold Filled", "Topos Hexágono Tallado 05 x Par Gold Filled", "Aro Para Tejer Gold Filled 2.5cm / x Par", "Aro Para Tejer Gold Filled 3cm / x Par", "Aro Para Tejer Gold Filled 3.5cm / x Par", "Herraje Gancho Catalan Dorado De Acero / X Par", "Candongas De Acero Doradas / 40mm / X Par", "Candongas De Acero Doradas / 25mm / X Par", "Candongas De Acero Doradas / 20mm / X Par", "Candongas De Acero Doradas / 35mm / X Par", "Gota Para Tejer 3 Centimetros Gold Filled X Par", "Triangulo Para Tejer 2 Centimetros Gold Filled X Par", "TERMINAL EN EXTENSIÓN DE RODIO", "HERRAJE ACERO 20 MM TRIANGULO", "GANCHO PESCADOR ACERO DORADO", "HERRAJE TOPO ACERO CIRCULO 20 MM", "HERRAJE ACERO 35 MM CIRCULAR", "HERRAJE ACERO 30 MM CIRCULAR", "GANCHO CATALAN ACERO DORADO OVALADO", "GANCHO CATALAN ACERO DORADO REDONDO", "HERRAJE TOPO ACERO BARRA 14 MM", "HERRAJE TOPO ACERO GOTA", "HERRAJE TOPO ACERO OVALOS", "HERRAJE TOPO ACERO TRIANGULO", "HERRAJE TOPO ACERO ABANICO", "MIYUKI DELICA 11/0"
-        ];
-
+    <script>
+        // --- CONSTANTES DE CONFIGURACIÓN ---
+        const STOCK_MIN_BASE = 10;
+        const PROVEEDORES = ["Santorini", "Inversiones JG"];
+        const INS_LIST = [
+          "topos goldfield filled liso 1", "Topos Rectángulo Tallado 01 x Par Gold Filled",
+          "Topos Circulo Irregular Tallado 03 x Par Gold Filled", "Topos Hexágono Tallado 05 x Par Gold Filled",
+          "Aro Para Tejer Gold Filled 2.5cm / x Par", "Aro Para Tejer Gold Filled 3cm / x Par",
+          "Aro Para Tejer Gold Filled 3.5cm / x Par", "Herraje Gancho Catalan Dorado De Acero / X Par",
+          "Candongas De Acero Doradas / 40mm / X Par", "Candongas De Acero Doradas / 20mm / X Par",
+          "Candongas De Acero Doradas / 35mm / X Par", "Gota Para Tejer 3 Centimetros Gold Filled X Par",
+          "Triangulo Para Tejer 2 Centimetros Gold Filled X Par", "TERMINAL EN EXTENIÓN DE RODIO",
+          "HERRAJE ACERO 20 MM TRIANGULO", "GANCHO PESCADOR ACERO DORADO",
+          "HERRAJE TOPO ACERO CIRCULO 20 MM", "HERRAJE ACERO 35 MM CIRCULAR",
+          "HERRAJE ACERO 30 MM CIRCULAR", "GANCHO CATALAN ACERO DORADO OVALADO",
+          "GANCHO CATALAN ACERO DORADO REDONDO", "HERRAJE TOPO ACERO BARRA 14 MM",
+          "HERRAJE TOPO ACERO GOTA", "HERRAJE TOPO ACERO OVALOS",
+          "HERRAJE TOPO ACERO TRIANGULO", "HERRAJE TOPO ACERO ABANICO", "MIYUKI DELICA 11/0",
+          "Candongas De Acero Doradas / 25mm / X Par"
+        ]; // Asegurando que haya 29 insumos
         const JOYAS_LIST = [
-            "Arete", "Aro roja", "Gota gris", "Triangulo miyuki", "Candonga 2,0", "Gota roja", "Gota multicolor", "Aro azul multicolor", "Aro negro", "Cuadro beige y rojo miyuki", "Semitriangulo negro", "Aro multicolor", "Semitriangulo negro+multicolor", "Candonga miyuki rosa", "Gota verde", "Aro blanco", "Gota azul", "Juego miyuki rosa", "Aro negra", "Aro verde", "Candonga Miyuki gris+dorado+blanco", "Juego miyuki lila", "Candonga pequeña", "Juego miyuki negro", "Manilla miyuki dorada+nude", "Manilla roja balines", "Triangulo negro miyuki", "Semitriangulo", "Triangulo rosa miyuki", "Manilla azul", "maillas mamá", "anillos", "Manilla triangulo"
-        ];
+          "Arete", "Aro roja", "Gota gris", "Triangulo miyuki", "Candonga 2,0", "Gota roja",
+          "Gota multicolor", "Aro azul multicolor", "Aro negro", "Cuadro beige y rojo miyuki",
+          "Semitriangulo negro", "Aro multicolor", "Semitriangulo negro+multicolor", "Candonga miyuki rosa",
+          "Gota verde", "Aro blanco", "Gota azul", "Juego miyuki rosa", "Aro negra", "Aro verde",
+          "Candonga Miyuki gris+dorado+blanco", "Juego miyuki lila", "Candonga pequeña", "Juego miyuki negro",
+          "Manilla miyuki dorada+nude", "Manilla roja balines", "Triangulo negro miyuki", "Semitriangulo",
+          "Triangulo rosa miyuki", "Manilla azul", "maillas mamá", "anillos", "Manilla triangulo"
+        ]; // 33 joyas
+        const INSUMO_IMAGE_URL = 'https://placehold.co/64x64/22c55e/ffffff?text=Insumo';
+        const JOYA_IMAGE_URL = 'https://placehold.co/64x64/0d47a1/ffffff?text=Joya';
 
-        // --- Rutas de Colección Firestore (Públicas, como requiere un inventario compartido) ---
-        const INSUMO_INV_PATH = `artifacts/${appId}/public/data/insumo_inventory`;
-        const JOYA_INV_PATH = `artifacts/${appId}/public/data/joya_inventory`;
-        const INSUMO_TRANS_PATH = `artifacts/${appId}/public/data/insumo_transactions`;
-        const JOYA_TRANS_PATH = `artifacts/${appId}/public/data/joya_transactions`;
 
-        // --- Funciones de Utilidad ---
-
-        // Función para generar un ID de documento basado en el nombre del ítem
-        const getItemDocId = (name) => {
-            return name.toLowerCase().replace(/[^a-z0-9]/g, ''); // Elimina espacios y caracteres especiales
+        // --- ESTRUCTURA DE DATOS INICIAL ---
+        let state = {
+            stock_supplies: {},
+            stock_jewelry: {},
+            history_purchases: [],
+            history_dispensations: [],
+            history_sales: [],
+            history_finished_goods: [],
+            nextInvoiceNumber: 1
         };
 
-        // Genera un ID de factura simple basado en la fecha y un hash corto
-        const generateInvoiceId = () => {
-            const date = new Date();
-            const year = date.getFullYear().toString().slice(-2);
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            const hash = Math.random().toString(36).substring(2, 6).toUpperCase();
-            return `FAC-${year}${month}${day}-${hash}`;
-        };
-
-        // Muestra un modal de mensaje (reemplazo de alert/confirm)
-        const showMessage = (title, message) => {
-            document.getElementById('modal-title').innerHTML = `<i data-lucide="bell" class="mr-2 h-6 w-6 text-indigo-600"></i> ${title}`;
-            document.getElementById('modal-message').textContent = message;
-            document.getElementById('message-modal').classList.remove('hidden');
-            lucide.createIcons(); // Vuelve a renderizar el ícono en el modal
-        };
-
-        // Cierra el modal de mensaje
-        document.getElementById('modal-close').addEventListener('click', () => {
-            document.getElementById('message-modal').classList.add('hidden');
-        });
-
-        // Formatea la fecha para la UI
-        const formatDate = (timestamp) => {
-            if (timestamp && timestamp.toDate) {
-                return timestamp.toDate().toLocaleString('es-CO', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            }
-            return new Date().toLocaleDateString('es-CO');
-        };
-
-        // Función para obtener una URL de imagen de marcador de posición (placeholder)
-        const getPlaceholderImageUrl = (name, category = 'joya') => {
-            const color = category === 'joya' ? '1D4ED8/FFFFFF' : '10B981/FFFFFF';
-            const shortName = name.split(' ')[0].substring(0, 5);
-            return `https://placehold.co/100x100/${color}?text=${encodeURIComponent(shortName)}`;
-        };
-
-        // --- Inicialización de Firebase y Autenticación (Función renombrada a setupFirebase) ---
-
-        const setupFirebase = async () => {
+        // --- FUNCIONES DE PERSISTENCIA (localStorage) ---
+        function loadState() {
             try {
-                // Se utiliza initializeApp importada de firebase/app
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                // For a more persistent experience, use local persistence
-                await setPersistence(auth, browserLocalPersistence);
-
-                // Sign in logic
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+                const persistedState = localStorage.getItem('ponte_zafiro_inventory_state');
+                if (persistedState) {
+                    state = JSON.parse(persistedState);
                 } else {
-                    await signInAnonymously(auth);
+                    // Inicializar stocks a 0 si es la primera carga
+                    INS_LIST.forEach(insumo => { state.stock_supplies[insumo] = 0; });
+                    JOYAS_LIST.forEach(joya => { state.stock_jewelry[joya] = 0; });
                 }
-
-                // Auth state listener
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        isAuthReady = true;
-                        console.log("Firebase Auth Ready. User ID:", userId);
-                        // Una vez autenticado, iniciar la carga de datos en tiempo real
-                        setupRealtimeListeners();
-                    } else {
-                        // User is signed out (e.g., in case of anonymous sign-in failure)
-                        console.error("No se pudo autenticar al usuario. Usando ID anónimo temporal.");
-                        userId = crypto.randomUUID();
-                        isAuthReady = true;
-                        setupRealtimeListeners(); // Intentar cargar datos incluso si es anónimo
-                    }
-                });
-
             } catch (error) {
-                console.error("Error al inicializar Firebase o autenticar:", error);
-                showMessage("Error Crítico", "No se pudo conectar con la base de datos. Verifique la configuración.");
-                isAuthReady = true; // Permite que el resto de la UI se cargue
+                console.error("Error cargando el estado de localStorage:", error);
+                // Forzar inicialización si hay un error
+                INS_LIST.forEach(insumo => { state.stock_supplies[insumo] = 0; });
+                JOYAS_LIST.forEach(joya => { state.stock_jewelry[joya] = 0; });
             }
-        };
+        }
 
-        // --- Lógica de Real-Time Listeners (onSnapshot) ---
-
-        const setupRealtimeListeners = () => {
-            if (!isAuthReady || !db) return;
-
-            // 1. Stock de Insumos
-            onSnapshot(collection(db, INSUMO_INV_PATH), (snapshot) => {
-                const insumos = [];
-                snapshot.forEach(doc => {
-                    insumos.push({ id: doc.id, ...doc.data() });
-                });
-                renderInsumoStock(insumos);
-            }, (error) => console.error("Error al escuchar stock de insumos:", error));
-
-            // 2. Stock de Joyas
-            onSnapshot(collection(db, JOYA_INV_PATH), (snapshot) => {
-                const joyas = [];
-                snapshot.forEach(doc => {
-                    joyas.push({ id: doc.id, ...doc.data() });
-                });
-                renderJoyaStock(joyas);
-            }, (error) => console.error("Error al escuchar stock de joyas:", error));
-
-            // 3. Historial de Ventas de Joyas (Tipo 'venta')
-            onSnapshot(collection(db, JOYA_TRANS_PATH), (snapshot) => {
-                const ventas = [];
-                snapshot.forEach(doc => {
-                    ventas.push({ id: doc.id, ...doc.data() });
-                });
-                // Filtrar solo las ventas y ordenar por fecha descendente
-                const historialVentas = ventas
-                    .filter(t => t.type === 'venta')
-                    .sort((a, b) => (b.date?.toMillis() || 0) - (a.date?.toMillis() || 0));
-                renderHistorialVentas(historialVentas);
-            }, (error) => console.error("Error al escuchar historial de ventas:", error));
-
-            // 4. Historial de Dispensación de Insumos (Tipo 'dispensacion')
-            onSnapshot(collection(db, INSUMO_TRANS_PATH), (snapshot) => {
-                const dispensaciones = [];
-                snapshot.forEach(doc => {
-                    dispensaciones.push({ id: doc.id, ...doc.data() });
-                });
-                // Filtrar solo las dispensaciones y ordenar por fecha descendente
-                const historialDispensacion = dispensaciones
-                    .filter(t => t.type === 'dispensacion')
-                    .sort((a, b) => (b.date?.toMillis() || 0) - (a.date?.toMillis() || 0));
-                renderHistorialDispensacion(historialDispensacion);
-            }, (error) => console.error("Error al escuchar historial de dispensación:", error));
-        };
-
-        // --- Funciones de Renderizado de la UI ---
-
-        const renderInsumoStock = (insumos) => {
-            const container = document.getElementById('insumos-stock-board');
-            if (insumos.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 py-4">No hay insumos registrados en stock.</p>';
-                return;
+        function saveState() {
+            try {
+                localStorage.setItem('ponte_zafiro_inventory_state', JSON.stringify(state));
+                console.log("Estado guardado en localStorage.");
+            } catch (error) {
+                console.error("Error guardando el estado en localStorage:", error);
             }
+        }
 
-            container.innerHTML = insumos.map(item => {
-                const alertClass = item.stock < MIN_STOCK ? 'alert-low' : 'alert-ok';
-                const alertText = item.stock < MIN_STOCK ? 'Stock Mínimo' : 'Stock OK';
-                const icon = item.stock < MIN_STOCK ? 'alert-triangle' : 'check-circle';
-                const color = item.stock < MIN_STOCK ? 'text-red-600' : 'text-emerald-600';
-                const imageUrl = getPlaceholderImageUrl(item.name, 'insumo');
+        // --- LÓGICA DE NEGOCIO ---
 
-                return `
-                    <div class="stock-item-card flex items-center p-3 rounded-lg bg-white shadow-md border border-gray-100 transition duration-200 cursor-default">
-                        <img src="${imageUrl}" onerror="this.onerror=null;this.src='${getPlaceholderImageUrl('insumo', 'insumo')}'" alt="${item.name}" class="w-10 h-10 object-cover rounded mr-4 ring-2 ring-emerald-300">
-                        <div class="flex-grow">
-                            <p class="font-medium text-gray-800">${item.name}</p>
-                            <p class="text-sm text-gray-500">Stock: <span class="${color} font-bold">${item.stock}</span> unidades</p>
+        function generateNextInvoiceNumber() {
+            const invoice = state.nextInvoiceNumber.toString().padStart(6, '0');
+            state.nextInvoiceNumber++;
+            return `FACT-${invoice}`;
+        }
+
+        function handlePurchaseRegistration(event) {
+            event.preventDefault();
+            const form = event.target;
+            const invoice = generateNextInvoiceNumber();
+            const insumo = form['insumo-compra'].value;
+            const proveedor = form['proveedor'].value;
+            const cantidad = parseInt(form['cantidad-comprada'].value, 10);
+            const date = new Date().toISOString();
+
+            if (cantidad > 0) {
+                // 1. Actualizar Stock
+                state.stock_supplies[insumo] = (state.stock_supplies[insumo] || 0) + cantidad;
+
+                // 2. Registrar Historial
+                state.history_purchases.unshift({
+                    date,
+                    invoice,
+                    proveedor,
+                    insumo,
+                    cantidad,
+                    type: 'Compra'
+                });
+
+                saveState();
+                form.reset();
+                // Actualizar el número de factura en el UI
+                document.getElementById('no-factura').value = generateNextInvoiceNumber();
+                renderStockDashboards();
+                showMessage('Compra de insumos registrada con éxito.', 'success');
+            } else {
+                showMessage('La cantidad debe ser positiva.', 'error');
+            }
+        }
+
+        function handleFinishedGoodsRegistration(event) {
+            event.preventDefault();
+            const form = event.target;
+            const joya = form['nombre-joya'].value;
+            const cantidad = parseInt(form['cantidad-terminada'].value, 10);
+            const date = new Date().toISOString();
+
+            if (cantidad > 0) {
+                // 1. Actualizar Stock
+                state.stock_jewelry[joya] = (state.stock_jewelry[joya] || 0) + cantidad;
+
+                // 2. Registrar Historial
+                state.history_finished_goods.unshift({
+                    date,
+                    joya,
+                    cantidad,
+                    type: 'Terminada'
+                });
+
+                saveState();
+                form.reset();
+                renderStockDashboards();
+                showMessage('Registro de joya terminada con éxito.', 'success');
+            } else {
+                showMessage('La cantidad debe ser positiva.', 'error');
+            }
+        }
+
+        function handleDispensation(event) {
+            event.preventDefault();
+            const form = event.target;
+            const insumo = form['insumo-dispensacion'].value;
+            const solicitante = form['solicitante'].value;
+            const cantidad = parseInt(form['cantidad-entregada'].value, 10);
+            const date = new Date().toISOString();
+
+            const currentStock = state.stock_supplies[insumo] || 0;
+
+            if (cantidad > 0) {
+                if (currentStock >= cantidad) {
+                    // 1. Actualizar Stock
+                    state.stock_supplies[insumo] -= cantidad;
+
+                    // 2. Registrar Historial
+                    state.history_dispensations.unshift({
+                        date,
+                        solicitante,
+                        insumo,
+                        cantidad,
+                        type: 'Dispensación'
+                    });
+
+                    saveState();
+                    form.reset();
+                    renderStockDashboards();
+                    showMessage(`Dispensación de ${cantidad} unidades de ${insumo} registrada.`, 'success');
+                } else {
+                    showMessage(`Stock insuficiente. Solo hay ${currentStock} unidades de ${insumo}.`, 'error');
+                }
+            } else {
+                showMessage('La cantidad debe ser positiva.', 'error');
+            }
+        }
+
+        function handleSaleRegistration(event) {
+            event.preventDefault();
+            const form = event.target;
+            const joya = form['joya-vendida'].value;
+            const cantidad = parseInt(form['cantidad-vendida'].value, 10);
+            const date = new Date().toISOString();
+
+            const currentStock = state.stock_jewelry[joya] || 0;
+
+            if (cantidad > 0) {
+                if (currentStock >= cantidad) {
+                    // 1. Actualizar Stock
+                    state.stock_jewelry[joya] -= cantidad;
+
+                    // 2. Registrar Historial
+                    state.history_sales.unshift({
+                        date,
+                        joya,
+                        cantidad,
+                        type: 'Venta'
+                    });
+
+                    saveState();
+                    form.reset();
+                    renderStockDashboards();
+                    showMessage(`Venta de ${cantidad} unidades de ${joya} registrada.`, 'success');
+                } else {
+                    showMessage(`Stock insuficiente de joyas. Solo hay ${currentStock} unidades de ${joya}.`, 'error');
+                }
+            } else {
+                showMessage('La cantidad debe ser positiva.', 'error');
+            }
+        }
+
+        // --- RENDERING Y UI ---
+
+        function showMessage(message, type) {
+            const container = document.getElementById('form-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `p-4 mb-4 rounded-lg text-white font-medium shadow-md ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+            alertDiv.textContent = message;
+
+            container.prepend(alertDiv);
+            setTimeout(() => alertDiv.remove(), 4000);
+        }
+
+        function renderStockDashboards() {
+            const insumoDashboard = document.getElementById('insumo-stock-dashboard');
+            const joyaDashboard = document.getElementById('joya-stock-dashboard');
+            insumoDashboard.innerHTML = '';
+            joyaDashboard.innerHTML = '';
+
+            // Renderizar Stock de Insumos
+            Object.keys(state.stock_supplies).forEach(insumo => {
+                const stock = state.stock_supplies[insumo];
+                const isLow = stock < STOCK_MIN_BASE;
+                const colorClass = isLow ? 'bg-red-200 text-red-800 stock-alert-red' : 'bg-green-200 text-green-800';
+
+                insumoDashboard.innerHTML += `
+                    <div class="stock-card p-3 rounded-lg flex justify-between items-center shadow-sm ${isLow ? 'border-l-4 border-red-600' : 'border-l-4 border-green-600'}">
+                        <div class="flex items-center">
+                            <img src="${INSUMO_IMAGE_URL}" class="w-8 h-8 rounded mr-3 hidden md:block" alt="Insumo">
+                            <span class="font-medium text-sm">${insumo}</span>
                         </div>
-                        <div class="flex items-center text-xs font-semibold py-1 px-2 rounded-full ${alertClass} border ml-2">
-                            <i data-lucide="${icon}" class="w-3 h-3 mr-1"></i> ${alertText}
+                        <div class="text-right">
+                            <span class="text-xs font-semibold block text-gray-500">Stock</span>
+                            <span class="text-lg font-bold ${colorClass.includes('red') ? 'text-red-700' : 'text-green-700'}">${stock}</span>
+                            ${isLow ? `<span class="inline-flex items-center text-xs font-bold ${colorClass} py-1 px-2 rounded-full ml-2"><i class="fas fa-exclamation-triangle mr-1"></i> Alerta Mínimo (${STOCK_MIN_BASE})</span>` : ''}
                         </div>
                     </div>
                 `;
-            }).join('');
-            // Re-renderizar iconos de lucide
-            lucide.createIcons();
-        };
+            });
 
-        const renderJoyaStock = (joyas) => {
-            const container = document.getElementById('joyas-stock-board');
-            if (joyas.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 md:col-span-2 py-4">No hay joyas terminadas registradas.</p>';
-                return;
-            }
+            // Renderizar Stock de Joyas
+            Object.keys(state.stock_jewelry).forEach(joya => {
+                const stock = state.stock_jewelry[joya];
+                const isLow = stock < STOCK_MIN_BASE;
+                const colorClass = isLow ? 'bg-red-200 text-red-800 stock-alert-red' : 'bg-green-200 text-green-800';
 
-            container.innerHTML = joyas.map(item => {
-                const alertClass = item.stock < MIN_STOCK ? 'alert-low' : 'alert-ok';
-                const alertText = item.stock < MIN_STOCK ? 'Stock Mínimo' : 'Stock OK';
-                const icon = item.stock < MIN_STOCK ? 'alert-triangle' : 'check-circle';
-                const color = item.stock < MIN_STOCK ? 'text-red-600' : 'text-emerald-600';
-                const imageUrl = getPlaceholderImageUrl(item.name, 'joya');
-
-                return `
-                    <div class="stock-item-card flex items-center p-3 rounded-lg bg-white shadow-md border border-gray-100 transition duration-200 cursor-default">
-                        <img src="${imageUrl}" onerror="this.onerror=null;this.src='${getPlaceholderImageUrl('joya', 'joya')}'" alt="${item.name}" class="w-10 h-10 object-cover rounded mr-4 ring-2 ring-blue-300">
-                        <div class="flex-grow">
-                            <p class="font-medium text-gray-800">${item.name}</p>
-                            <p class="text-sm text-gray-500">Stock: <span class="${color} font-bold">${item.stock}</span> unidades</p>
+                joyaDashboard.innerHTML += `
+                    <div class="stock-card p-3 rounded-lg flex justify-between items-center shadow-sm ${isLow ? 'border-l-4 border-red-600' : 'border-l-4 border-green-600'}">
+                        <div class="flex items-center">
+                            <img src="${JOYA_IMAGE_URL}" class="w-8 h-8 rounded mr-3 hidden md:block" alt="Joya">
+                            <span class="font-medium text-sm">${joya}</span>
                         </div>
-                        <div class="flex items-center text-xs font-semibold py-1 px-2 rounded-full ${alertClass} border ml-2">
-                            <i data-lucide="${icon}" class="w-3 h-3 mr-1"></i> ${alertText}
+                        <div class="text-right flex items-center">
+                            <div class="mr-4">
+                                <span class="text-xs font-semibold block text-gray-500">Stock</span>
+                                <span class="text-lg font-bold ${colorClass.includes('red') ? 'text-red-700' : 'text-green-700'}">${stock}</span>
+                            </div>
+                            ${isLow ? `<span class="inline-flex items-center text-xs font-bold ${colorClass} py-1 px-2 rounded-full ml-2"><i class="fas fa-exclamation-triangle mr-1"></i> Alerta Mínimo (${STOCK_MIN_BASE})</span>` : ''}
                         </div>
                     </div>
                 `;
-            }).join('');
-            lucide.createIcons();
-        };
+            });
 
-        const renderHistorialVentas = (ventas) => {
-            const body = document.getElementById('ventas-body');
-            if (ventas.length === 0) {
-                body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-gray-500">No hay ventas registradas aún.</td></tr>';
+            if (Object.keys(state.stock_supplies).length === 0) insumoDashboard.innerHTML = `<p class="text-gray-500">No hay insumos registrados.</p>`;
+            if (Object.keys(state.stock_jewelry).length === 0) joyaDashboard.innerHTML = `<p class="text-gray-500">No hay joyas registradas.</p>`;
+        }
+
+        function renderForm(tabName) {
+            const container = document.getElementById('form-container');
+            let formHtml = '';
+            let submitHandler = '';
+            let formColor = '';
+
+            // Definir el contenido del formulario según la pestaña
+            switch (tabName) {
+                case 'registro-compras':
+                    formColor = 'border-green-600';
+                    submitHandler = 'handlePurchaseRegistration(event)';
+                    formHtml = `
+                        <h3 class="text-2xl font-semibold mb-6 text-green-700 flex items-center"><i class="fas fa-plus-circle mr-3"></i> Registro de Compras de Insumos</h3>
+                        <form onsubmit="${submitHandler}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="no-factura" class="block text-sm font-medium text-gray-700">No. de Factura (Automático)</label>
+                                    <input type="text" id="no-factura" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 bg-gray-100 cursor-not-allowed" value="${generateNextInvoiceNumber()}" readonly>
+                                </div>
+                                <div>
+                                    <label for="proveedor" class="block text-sm font-medium text-gray-700">Proveedor</label>
+                                    <select id="proveedor" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                        ${PROVEEDORES.map(p => `<option value="${p}">${p}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="insumo-compra" class="block text-sm font-medium text-gray-700">Insumo Comprado</label>
+                                    <select id="insumo-compra" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                        ${INS_LIST.map(i => `<option value="${i}">${i}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="cantidad-comprada" class="block text-sm font-medium text-gray-700">Cantidad Comprada</label>
+                                    <input type="number" id="cantidad-comprada" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+                                    <i class="fas fa-check-circle mr-2"></i> Registrar Compra
+                                </button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+
+                case 'solicitud-dispensacion':
+                    formColor = 'border-orange-600';
+                    submitHandler = 'handleDispensation(event)';
+                    formHtml = `
+                        <h3 class="text-2xl font-semibold mb-6 text-orange-700 flex items-center"><i class="fas fa-share-square mr-3"></i> Solicitud/Dispensación de Insumos</h3>
+                        <form onsubmit="${submitHandler}">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label for="solicitante" class="block text-sm font-medium text-gray-700">Solicitante (Artesano/a)</label>
+                                    <input type="text" id="solicitante" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border" placeholder="Nombre del Artesano/a">
+                                </div>
+                                <div>
+                                    <label for="insumo-dispensacion" class="block text-sm font-medium text-gray-700">Insumo Entregado</label>
+                                    <select id="insumo-dispensacion" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                        ${INS_LIST.map(i => `<option value="${i}">${i}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="cantidad-entregada" class="block text-sm font-medium text-gray-700">Cantidad Entregada</label>
+                                    <input type="number" id="cantidad-entregada" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150">
+                                    <i class="fas fa-truck-loading mr-2"></i> Dispensar Insumo
+                                </button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+
+                case 'registro-venta':
+                    formColor = 'border-sapphire';
+                    submitHandler = 'handleSaleRegistration(event)';
+                    formHtml = `
+                        <h3 class="text-2xl font-semibold mb-6 text-sapphire flex items-center"><i class="fas fa-cash-register mr-3"></i> Registro de Venta de Joyas</h3>
+                        <form onsubmit="${submitHandler}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="joya-vendida" class="block text-sm font-medium text-gray-700">Joya Vendida</label>
+                                    <select id="joya-vendida" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                        ${JOYAS_LIST.map(j => `<option value="${j}">${j}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="cantidad-vendida" class="block text-sm font-medium text-gray-700">Cantidad Vendida</label>
+                                    <input type="number" id="cantidad-vendida" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-sapphire hover:bg-sapphire-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150">
+                                    <i class="fas fa-dollar-sign mr-2"></i> Registrar Venta
+                                </button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+
+                case 'joya-terminada':
+                    formColor = 'border-red-700';
+                    submitHandler = 'handleFinishedGoodsRegistration(event)';
+                    formHtml = `
+                        <h3 class="text-2xl font-semibold mb-6 text-red-700 flex items-center"><i class="fas fa-tools mr-3"></i> Registro de Joya Terminada</h3>
+                        <form onsubmit="${submitHandler}">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="nombre-joya" class="block text-sm font-medium text-gray-700">Nombre de la Joya</label>
+                                    <select id="nombre-joya" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                        ${JOYAS_LIST.map(j => `<option value="${j}">${j}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="cantidad-terminada" class="block text-sm font-medium text-gray-700">Cantidad Terminada</label>
+                                    <input type="number" id="cantidad-terminada" required min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-3 border">
+                                </div>
+                            </div>
+                            <div class="mt-8">
+                                <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition duration-150">
+                                    <i class="fas fa-plus-square mr-2"></i> Añadir a Stock
+                                </button>
+                            </div>
+                        </form>
+                    `;
+                    break;
+
+                default:
+                    formHtml = '<p class="text-gray-500">Seleccione una opción.</p>';
+            }
+
+            container.innerHTML = `<div class="p-6 rounded-xl border-t-4 ${formColor}">${formHtml}</div>`;
+        }
+
+        // --- MANEJO DE PESTAÑAS ---
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderForm(tab.dataset.tab);
+                });
+            });
+            // Cargar la pestaña activa por defecto al iniciar
+            document.querySelector('.tab-button.active').click();
+        }
+
+        // --- HISTORIAL Y EXPORTACIÓN ---
+
+        function renderHistory() {
+            const type = document.getElementById('history-type').value;
+            const startDateStr = document.getElementById('start-date').value;
+            const endDateStr = document.getElementById('end-date').value;
+
+            let data = [];
+            let headers = [];
+            let title = '';
+
+            switch (type) {
+                case 'purchases':
+                    data = state.history_purchases;
+                    headers = ['Fecha', 'No. Factura', 'Proveedor', 'Insumo', 'Cantidad', 'Tipo'];
+                    title = 'Registro de Compras (Insumos)';
+                    break;
+                case 'dispensations':
+                    data = state.history_dispensations;
+                    headers = ['Fecha', 'Solicitante', 'Insumo', 'Cantidad', 'Tipo'];
+                    title = 'Solicitud/Dispensación (Insumos)';
+                    break;
+                case 'finished_goods':
+                    data = state.history_finished_goods;
+                    headers = ['Fecha', 'Joya', 'Cantidad', 'Tipo'];
+                    title = 'Registro de Joya Terminada';
+                    break;
+                case 'sales':
+                    data = state.history_sales;
+                    headers = ['Fecha', 'Joya', 'Cantidad', 'Tipo'];
+                    title = 'Registro de Venta de Joyas';
+                    break;
+            }
+
+            // Aplicar filtro de fecha
+            const filteredData = data.filter(item => {
+                const itemDate = new Date(item.date.split('T')[0]);
+                let isAfterStart = true;
+                let isBeforeEnd = true;
+
+                if (startDateStr) {
+                    isAfterStart = itemDate >= new Date(startDateStr);
+                }
+                if (endDateStr) {
+                    isBeforeEnd = itemDate <= new Date(endDateStr);
+                }
+                return isAfterStart && isBeforeEnd;
+            });
+
+            // Construir la tabla HTML
+            let tableHtml = `<h4 class="text-xl font-medium mb-3">${title} (${filteredData.length} registros)</h4>`;
+            tableHtml += '<table class="min-w-full divide-y divide-gray-200 border rounded-lg shadow-md">';
+            tableHtml += '<thead class="bg-gray-50"><tr class="text-xs font-medium text-gray-500 uppercase tracking-wider">';
+            headers.forEach(h => tableHtml += `<th class="px-6 py-3 text-left">${h}</th>`);
+            tableHtml += '</tr></thead>';
+            tableHtml += '<tbody class="bg-white divide-y divide-gray-200">';
+
+            filteredData.forEach(item => {
+                tableHtml += '<tr>';
+                tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(item.date).toLocaleString()}</td>`;
+                if (type === 'purchases') {
+                    tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.invoice}</td>`;
+                    tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.proveedor}</td>`;
+                    tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.insumo}</td>`;
+                } else if (type === 'dispensations') {
+                    tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center"><i class="fas fa-user mr-2 text-orange-500"></i>${item.solicitante}</td>`;
+                    tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.insumo}</td>`;
+                } else if (type === 'finished_goods' || type === 'sales') {
+                    tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${item.joya}</td>`;
+                }
+                tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-sm text-center font-bold ${item.type === 'Venta' || item.type === 'Dispensación' ? 'text-red-600' : 'text-green-600'}">${item.cantidad}</td>`;
+                tableHtml += `<td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">${item.type}</td>`;
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody></table>';
+
+            document.getElementById('history-table-container').innerHTML = tableHtml;
+        }
+
+
+        function exportToExcel() {
+            const type = document.getElementById('history-type').value;
+            const startDateStr = document.getElementById('start-date').value;
+            const endDateStr = document.getElementById('end-date').value;
+
+            let data = [];
+            let headers = [];
+            let fileName = '';
+
+            switch (type) {
+                case 'purchases':
+                    data = state.history_purchases;
+                    headers = ['Fecha', 'No. Factura', 'Proveedor', 'Insumo', 'Cantidad', 'Tipo'];
+                    fileName = 'Registro_Compras_Insumos';
+                    break;
+                case 'dispensations':
+                    data = state.history_dispensations;
+                    headers = ['Fecha', 'Solicitante', 'Insumo', 'Cantidad', 'Tipo'];
+                    fileName = 'Registro_Dispensacion_Insumos';
+                    break;
+                case 'finished_goods':
+                    data = state.history_finished_goods;
+                    headers = ['Fecha', 'Joya', 'Cantidad', 'Tipo'];
+                    fileName = 'Registro_Joya_Terminada';
+                    break;
+                case 'sales':
+                    data = state.history_sales;
+                    headers = ['Fecha', 'Joya', 'Cantidad', 'Tipo'];
+                    fileName = 'Registro_Venta_Joyas';
+                    break;
+            }
+
+            // Aplicar filtro de fecha
+            const filteredData = data.filter(item => {
+                const itemDate = new Date(item.date.split('T')[0]);
+                let isAfterStart = true;
+                let isBeforeEnd = true;
+
+                if (startDateStr) {
+                    isAfterStart = itemDate >= new Date(startDateStr);
+                }
+                if (endDateStr) {
+                    isBeforeEnd = itemDate <= new Date(endDateStr);
+                }
+                return isAfterStart && isBeforeEnd;
+            });
+
+            if (filteredData.length === 0) {
+                showMessage('No hay datos para exportar en el rango de fechas seleccionado.', 'error');
                 return;
             }
 
-            body.innerHTML = ventas.map(item => `
-                <tr class="hover:bg-blue-50 transition duration-100">
-                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">${formatDate(item.date)}</td>
-                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.joya}</td>
-                    <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-bold text-red-600">-${item.cantidad}</td>
-                </tr>
-            `).join('');
-        };
-
-        const renderHistorialDispensacion = (dispensaciones) => {
-            const body = document.getElementById('dispensacion-body');
-            if (dispensaciones.length === 0) {
-                body.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-500">No hay dispensaciones registradas aún.</td></tr>';
-                return;
-            }
-
-            body.innerHTML = dispensaciones.map(item => `
-                <tr class="hover:bg-amber-50 transition duration-100">
-                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">${formatDate(item.date)}</td>
-                    <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">${item.insumo}</td>
-                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700">${item.solicitante}</td>
-                    <td class="px-3 py-2 whitespace-nowrap text-sm text-right font-bold text-red-600">-${item.cantidad}</td>
-                </tr>
-            `).join('');
-        };
-
-        // --- Lógica de Formularios y Transacciones ---
-
-        // Utiliza el nombre del ítem como ID de documento de stock
-        const updateStock = async (name, path, amount) => {
-            const docId = getItemDocId(name);
-            const docRef = doc(db, path, docId);
-            await setDoc(docRef, {
-                name: name, // Guardamos el nombre original para mostrar
-                stock: increment(amount),
-                lastUpdated: serverTimestamp(),
-            }, { merge: true });
-        };
-
-        const addTransaction = async (path, data) => {
-            await addDoc(collection(db, path), {
-                ...data,
-                date: serverTimestamp(),
-                userId: userId
-            });
-        };
-
-        // Handler: Registro de Compras (Insumos + Stock Up)
-        const handleCompra = async (e) => {
-            e.preventDefault();
-            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
-
-            const factura = document.getElementById('compra-factura').value;
-            const proveedor = document.getElementById('compra-proveedor').value;
-            const insumo = document.getElementById('compra-insumo').value;
-            const cantidad = parseInt(document.getElementById('compra-cantidad').value);
-
-            if (!proveedor || insumo === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, seleccione un proveedor e insumo y una cantidad válida.");
-
-            try {
-                // 1. Actualizar Stock de Insumo (Incrementar). Usamos el nombre original para la transacción
-                await updateStock(insumo, INSUMO_INV_PATH, cantidad);
-
-                // 2. Registrar Transacción (Log)
-                await addTransaction(INSUMO_TRANS_PATH, {
-                    type: 'compra',
-                    factura: factura,
-                    proveedor: proveedor,
-                    insumo: insumo,
-                    cantidad: cantidad
-                });
-
-                showMessage("Registro Exitoso", `Se registraron ${cantidad} unidades de ${insumo}. Stock actualizado.`);
-                e.target.reset();
-                // Asegurarse de reestablecer los select y regenerar la factura
-                document.getElementById('compra-proveedor').value = "";
-                document.getElementById('compra-insumo').value = "";
-                document.getElementById('compra-factura').value = generateInvoiceId();
-            } catch (error) {
-                console.error("Error al registrar compra:", error);
-                showMessage("Error en BD", "Hubo un error al guardar la compra. Revise la consola.");
-            }
-        };
-
-        // Handler: Solicitud/Dispensación (Insumos + Stock Down)
-        const handleDispensacion = async (e) => {
-            e.preventDefault();
-            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
-
-            const solicitante = document.getElementById('dispensacion-solicitante').value.trim();
-            const insumo = document.getElementById('dispensacion-insumo').value;
-            const cantidad = parseInt(document.getElementById('dispensacion-cantidad').value);
-
-            if (!solicitante || insumo === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, complete todos los campos con valores válidos.");
-
-            try {
-                const docId = getItemDocId(insumo);
-                const docRef = doc(db, INSUMO_INV_PATH, docId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists() && docSnap.data().stock >= cantidad) {
-                    // 1. Actualizar Stock de Insumo (Decrementar)
-                    await updateStock(insumo, INSUMO_INV_PATH, -cantidad);
-
-                    // 2. Registrar Transacción (Log - Requerido para Historial)
-                    await addTransaction(INSUMO_TRANS_PATH, {
-                        type: 'dispensacion',
-                        solicitante: solicitante,
-                        insumo: insumo,
-                        cantidad: cantidad
-                    });
-
-                    showMessage("Dispensación Exitosa", `Se entregaron ${cantidad} unidades de ${insumo} a ${solicitante}.`);
-                    e.target.reset();
-                    document.getElementById('dispensacion-insumo').value = "";
-                } else if (docSnap.exists()) {
-                    showMessage("Stock Insuficiente", `Solo hay ${docSnap.data().stock} unidades de ${insumo}. No se pudo dispensar ${cantidad}.`);
-                } else {
-                    showMessage("Stock No Encontrado", `El insumo ${insumo} no está en el inventario.`);
+            // Crear el contenido CSV
+            let csvContent = headers.join('\t') + '\n'; // Usar tabulador como separador
+            filteredData.forEach(item => {
+                let row = [];
+                switch (type) {
+                    case 'purchases':
+                        row = [
+                            new Date(item.date).toLocaleString(),
+                            item.invoice,
+                            item.proveedor,
+                            item.insumo,
+                            item.cantidad,
+                            item.type
+                        ];
+                        break;
+                    case 'dispensations':
+                        row = [
+                            new Date(item.date).toLocaleString(),
+                            item.solicitante,
+                            item.insumo,
+                            item.cantidad,
+                            item.type
+                        ];
+                        break;
+                    case 'finished_goods':
+                    case 'sales':
+                        row = [
+                            new Date(item.date).toLocaleString(),
+                            item.joya,
+                            item.cantidad,
+                            item.type
+                        ];
+                        break;
                 }
-            } catch (error) {
-                console.error("Error al dispensar insumo:", error);
-                showMessage("Error en BD", "Hubo un error al guardar la dispensación. Revise la consola.");
-            }
-        };
-
-        // Handler: Registro de Joya Terminada (Joya + Stock Up)
-        const handleJoyaTerminada = async (e) => {
-            e.preventDefault();
-            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
-
-            const joya = document.getElementById('terminada-joya').value;
-            const cantidad = parseInt(document.getElementById('terminada-cantidad').value);
-
-            if (joya === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, seleccione una joya y una cantidad válida.");
-
-            try {
-                // 1. Actualizar Stock de Joya (Incrementar)
-                await updateStock(joya, JOYA_INV_PATH, cantidad);
-
-                // 2. Registrar Transacción (Log)
-                await addTransaction(JOYA_TRANS_PATH, {
-                    type: 'terminada',
-                    joya: joya,
-                    cantidad: cantidad
-                });
-
-                showMessage("Registro Exitoso", `Se registraron ${cantidad} joyas terminadas de tipo ${joya}.`);
-                e.target.reset();
-                document.getElementById('terminada-joya').value = "";
-            } catch (error) {
-                console.error("Error al registrar joya terminada:", error);
-                showMessage("Error en BD", "Hubo un error al guardar la joya terminada. Revise la consola.");
-            }
-        };
-
-        // Handler: Registro de Venta (Joya + Stock Down)
-        const handleVenta = async (e) => {
-            e.preventDefault();
-            if (!isAuthReady) return showMessage("Estado Inactivo", "La base de datos se está inicializando. Intente en un momento.");
-
-            const joya = document.getElementById('venta-joya').value;
-            const cantidad = parseInt(document.getElementById('venta-cantidad').value);
-
-            if (joya === "" || isNaN(cantidad) || cantidad <= 0) return showMessage("Error de Datos", "Por favor, seleccione una joya y una cantidad válida.");
-
-            try {
-                const docId = getItemDocId(joya);
-                const docRef = doc(db, JOYA_INV_PATH, docId);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists() && docSnap.data().stock >= cantidad) {
-                    // 1. Actualizar Stock de Joya (Decrementar)
-                    await updateStock(joya, JOYA_INV_PATH, -cantidad);
-
-                    // 2. Registrar Transacción (Log - Requerido para Historial)
-                    await addTransaction(JOYA_TRANS_PATH, {
-                        type: 'venta',
-                        joya: joya,
-                        cantidad: cantidad
-                    });
-
-                    showMessage("Venta Registrada", `Se vendieron ${cantidad} unidades de ${joya}. Historial guardado.`);
-                    e.target.reset();
-                    document.getElementById('venta-joya').value = "";
-                } else if (docSnap.exists()) {
-                    showMessage("Stock Insuficiente", `Solo hay ${docSnap.data().stock} unidades de ${joya} terminadas. No se pudo vender ${cantidad}.`);
-                } else {
-                    showMessage("Stock No Encontrado", `La joya ${joya} no está en el inventario de terminadas.`);
-                }
-            } catch (error) {
-                console.error("Error al registrar venta:", error);
-                showMessage("Error en BD", "Hubo un error al guardar la venta. Revise la consola.");
-            }
-        };
-
-
-        // --- Inicialización de la Aplicación ---
-
-        const startApp = () => { // <--- RENOMBRADA DE initializeApp A startApp
-            // Llenar Dropdowns
-            const populateDropdown = (id, list) => {
-                const select = document.getElementById(id);
-                // Agregar opción por defecto para forzar la selección (HTML required no funciona bien con la primera opción)
-                const defaultOption = document.createElement('option');
-                defaultOption.value = "";
-                defaultOption.textContent = id.includes('compra-proveedor') ? "Seleccione un proveedor" : "Seleccione...";
-                defaultOption.selected = true;
-                defaultOption.disabled = true;
-                select.appendChild(defaultOption);
-
-                list.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item;
-                    option.textContent = item;
-                    select.appendChild(option);
-                });
-            };
-
-            populateDropdown('compra-insumo', INSUMOS_LIST);
-            populateDropdown('dispensacion-insumo', INSUMOS_LIST);
-            populateDropdown('terminada-joya', JOYAS_LIST);
-            populateDropdown('venta-joya', JOYAS_LIST);
-            // El proveedor ya estaba inicializado en el HTML, pero lo verificamos aquí si fuera necesario
-            
-            // Setup Tab Switching
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            const tabPanes = document.querySelectorAll('.tab-pane');
-
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const targetTab = button.getAttribute('data-tab');
-
-                    // Update button styles
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-
-                    // Update form visibility
-                    tabPanes.forEach(pane => {
-                        pane.style.display = 'none';
-                        if (pane.id === `form-${targetTab}`) {
-                            pane.style.display = 'block';
-                        }
-                    });
-
-                    // Update dates/invoice IDs on tab switch
-                    updateFormDefaults();
-                });
+                csvContent += row.join('\t') + '\n';
             });
 
-            // Set up form submission handlers
-            document.getElementById('form-compra').addEventListener('submit', handleCompra);
-            document.getElementById('form-dispensacion').addEventListener('submit', handleDispensacion);
-            document.getElementById('form-terminada').addEventListener('submit', handleJoyaTerminada);
-            document.getElementById('form-venta').addEventListener('submit', handleVenta);
+            // Generar el archivo XLS (en realidad es un TSV/CSV con extensión .xls para compatibilidad)
+            const link = document.createElement('a');
+            link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent);
+            link.download = `${fileName}_${startDateStr}_a_${endDateStr}.xls`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
-            // Initial defaults for forms
-            const updateFormDefaults = () => {
-                const currentDate = formatDate();
-                document.getElementById('compra-factura').value = generateInvoiceId();
-                document.getElementById('compra-date').textContent = currentDate;
-                document.getElementById('dispensacion-date').textContent = currentDate;
-                document.getElementById('terminada-date').textContent = currentDate;
-                document.getElementById('venta-date').textContent = currentDate;
-            };
+            showMessage(`Exportación de ${fileName} (${filteredData.length} registros) completada.`, 'success');
+        }
 
-            updateFormDefaults();
-
-            // Render all Lucide icons on load
-            lucide.createIcons();
-
-            // Initialize Firebase (renombrado de initializeFirebase a setupFirebase)
-            setupFirebase();
+        // --- INICIALIZACIÓN ---
+        window.onload = function() {
+            loadState();
+            setupTabs();
+            renderStockDashboards();
+            renderHistory(); // Cargar historial inicial al cargar la página
         };
 
-        // Ejecutar al cargar la ventana
-        window.onload = startApp; // <--- LLAMANDO A LA FUNCIÓN CON EL NUEVO NOMBRE
     </script>
-
 </body>
 </html>
